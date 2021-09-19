@@ -78,8 +78,7 @@ def cli():
     click.secho('   ', nl=False)
     click.secho('CSV information', bg=COLORS_BY_STAGE[0])
 
-    csv = click.prompt('Please enter a readable csv file that includes all file names', type=click.File('r'),
-                       default=open("/Users/amitrahav/Downloads/new_user_credentials.csv", "r"))
+    csv = click.prompt('Please enter a readable csv file that includes all file names', type=click.File('r'))
     without_header = click.prompt('Should ignore csv first line (got header)?', type=click.Choice(['Y', 'N']),
                                   default='Y')
     without_header = without_header is 'Y'
