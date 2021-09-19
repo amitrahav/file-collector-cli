@@ -30,7 +30,7 @@ def file_copier(index_file_path: str, output_folder: str) -> None:
 def file_finder(file_index: int, overall_files: int, file_contains: str, search_folder: str) -> List[str]:
     click.secho(f'{file_index} of {overall_files}: ', fg=COLORS_BY_STAGE[1], nl=False)
     click.secho(f'Indexing files including {file_contains} inside {str(search_folder)}', blink=True)
-    return [str(path) for path in Path(search_folder).rglob(f"*{file_contains}*.*")]
+    return [str(path) for path in Path(search_folder).rglob(f"*{file_contains}*")]
 
 
 def write_files_to_csv(searched_string: str, found_files: List[str], container_folder: str) -> str:
