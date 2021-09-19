@@ -21,10 +21,13 @@ def file_copier(index_file_path: str, output_folder: str) -> None:
         for row in content:
             file_origin_path = Path(row['Found file'])
             file_destination_path = Path(output_folder, file_origin_path.name)
-            shutil.copyfile(file_origin_path, file_destination_path)
-            row['Copied location'] = str(file_destination_path)
-            print(",".join(list(row.values())))  # print back the headers
-        f.close()
+            try:
+                shutil.copyfile(file_origin_path, file_destination_path)
+                row['Copied location'] = str(file_destination_path)
+                print(",".join(list(row.values())))  # print back the headers
+            except:
+                row['Copied location'] = ""
+                print(",".join(list(row.values())))  # print back the headers
 
 
 def file_finder(file_index: int, overall_files: int, file_contains: str, search_folder: str) -> List[str]:
@@ -36,20 +39,26 @@ def file_finder(file_index: int, overall_files: int, file_contains: str, search_
 def write_files_to_csv(searched_string: str, found_files: List[str], container_folder: str) -> str:
     sum_path = Path(container_folder, 'summary.csv')
     if sum_path.exists():
+        click.secho(f'Adding indexes to index file at {str(sum_path)}', fg=COLORS_BY_STAGE[1])
+        flag = "a"
+    else:
+        flag = "w"
         click.secho(f'Creating index file in {str(sum_path)}', fg=COLORS_BY_STAGE[1])
 
-    else:
-        click.secho(f'Adding indexes to index file at {str(sum_path)}', fg=COLORS_BY_STAGE[1])
+    if len(found_files):
+        rows_dict = [
+            {'String query': searched_string, 'Found file': file_path, 'Copied location': ''}
+            for file_path in found_files
+        ]
+        click.echo(f"Found {len(found_files)} files contains {searched_string} in {searched_string}")
 
-    rows_dict = [
-        {'String query': searched_string, 'Found file': file_path, 'Copied location': ''}
-        for file_path in found_files
-    ]
-    with open(str(sum_path), 'w', newline='') as summary:
-        file = DictWriter(summary, fieldnames=['String query', 'Found file', 'Copied location'])
-        file.writeheader()
-        file.writerows(rows_dict)
-        summary.close()
+        with open(str(sum_path), flag, newline='') as summary:
+            file = DictWriter(summary, fieldnames=['String query', 'Found file', 'Copied location'])
+            file.writeheader()
+            for row in rows_dict:
+                file.writerow(row)
+    else:
+        click.secho(f"Couldn't find any files contains {searched_string} in {searched_string}", bg="red", fg="white")
 
     return str(sum_path)
 
@@ -81,7 +90,7 @@ def cli():
     csv = click.prompt('Please enter a readable csv file that includes all file names', type=click.File('r'))
     without_header = click.prompt('Should ignore csv first line (got header)?', type=click.Choice(['Y', 'N']),
                                   default='Y')
-    without_header = without_header is 'Y'
+    without_header = without_header == 'Y'
 
     # Step 2 - files location
     click.secho('STEP 2', bold=True, underline=True, fg=COLORS_BY_STAGE[1], nl=False)
@@ -104,7 +113,7 @@ def cli():
     safe = click.prompt('1 - Safe and slow\n2 - Fast and dirty',
                         type=click.Choice(['1', '2']),
                         default='1')
-    safe = safe is '1'
+    safe = safe == '1'
 
     # Starting to do the magic
 
