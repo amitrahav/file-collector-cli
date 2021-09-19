@@ -6,6 +6,7 @@ setup(
     py_modules=['parserscript'],
     install_requires=[
         'Click',
+        'Pyfiglet'
     ],
     entry_points={
         'console_scripts': [
